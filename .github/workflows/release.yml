@@ -34,7 +34,7 @@ jobs:
             --exclude='backend/data/*.db' \
             --exclude='backend/data/*.sqlite' \
             --transform "s,^,dashboard-${VERSION}/," \
-            .
+            . 2>&1 | grep -v "file changed as we read it" || true
           
           echo "Created dashboard-${VERSION}.tar.gz"
           ls -lh dashboard-${VERSION}.tar.gz
@@ -51,30 +51,5 @@ jobs:
           files: |
             dashboard-*.tar.gz
             SHA256SUMS
-          body: |
-            ## CDO Vertex Dashboard v${{ steps.get_version.outputs.VERSION }}
-            
-            ### Installation
-            This release is automatically installed by the CDO Vertex deployment system on first boot.
-            
-            ### Manual Installation
-            ```bash
-            # Download
-            wget https://github.com/cdo-darts/dashboard/releases/download/v${{ steps.get_version.outputs.VERSION }}/dashboard-${{ steps.get_version.outputs.VERSION }}.tar.gz
-            wget https://github.com/cdo-darts/dashboard/releases/download/v${{ steps.get_version.outputs.VERSION }}/SHA256SUMS
-            
-            # Verify checksum
-            sha256sum -c SHA256SUMS
-            
-            # Extract
-            tar -xzf dashboard-${{ steps.get_version.outputs.VERSION }}.tar.gz
-            cd dashboard-${{ steps.get_version.outputs.VERSION }}
-            
-            # Run
-            ./start.sh
-            ```
-            
-            ### Changes
-            See commit history for details.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
