@@ -21,7 +21,7 @@ jobs:
         run: |
           VERSION=${{ steps.get_version.outputs.VERSION }}
           
-          # Create tarball excluding unnecessary files
+          # Create tarball - ignore "file changed" warnings
           tar -czf dashboard-${VERSION}.tar.gz \
             --exclude='.git*' \
             --exclude='*.pyc' \
@@ -34,7 +34,7 @@ jobs:
             --exclude='backend/data/*.db' \
             --exclude='backend/data/*.sqlite' \
             --transform "s,^,dashboard-${VERSION}/," \
-            . 2>&1 | grep -v "file changed as we read it" || true
+            . || [ $? -eq 1 ]
           
           echo "Created dashboard-${VERSION}.tar.gz"
           ls -lh dashboard-${VERSION}.tar.gz
