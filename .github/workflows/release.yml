@@ -1,0 +1,80 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+      - name: Create release tarball
+        run: |
+          VERSION=${{ steps.get_version.outputs.VERSION }}
+          
+          # Create tarball excluding unnecessary files
+          tar -czf dashboard-${VERSION}.tar.gz \
+            --exclude='.git*' \
+            --exclude='*.pyc' \
+            --exclude='__pycache__' \
+            --exclude='.vscode' \
+            --exclude='.idea' \
+            --exclude='backend/venv' \
+            --exclude='frontend/node_modules' \
+            --exclude='*.log' \
+            --exclude='backend/data/*.db' \
+            --exclude='backend/data/*.sqlite' \
+            --transform "s,^,dashboard-${VERSION}/," \
+            .
+          
+          echo "Created dashboard-${VERSION}.tar.gz"
+          ls -lh dashboard-${VERSION}.tar.gz
+      
+      - name: Generate SHA256 checksum
+        run: |
+          VERSION=${{ steps.get_version.outputs.VERSION }}
+          sha256sum dashboard-${VERSION}.tar.gz > SHA256SUMS
+          cat SHA256SUMS
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dashboard-*.tar.gz
+            SHA256SUMS
+          body: |
+            ## CDO Vertex Dashboard v${{ steps.get_version.outputs.VERSION }}
+            
+            ### Installation
+            This release is automatically installed by the CDO Vertex deployment system on first boot.
+            
+            ### Manual Installation
+            ```bash
+            # Download
+            wget https://github.com/cdo-darts/dashboard/releases/download/v${{ steps.get_version.outputs.VERSION }}/dashboard-${{ steps.get_version.outputs.VERSION }}.tar.gz
+            wget https://github.com/cdo-darts/dashboard/releases/download/v${{ steps.get_version.outputs.VERSION }}/SHA256SUMS
+            
+            # Verify checksum
+            sha256sum -c SHA256SUMS
+            
+            # Extract
+            tar -xzf dashboard-${{ steps.get_version.outputs.VERSION }}.tar.gz
+            cd dashboard-${{ steps.get_version.outputs.VERSION }}
+            
+            # Run
+            ./start.sh
+            ```
+            
+            ### Changes
+            See commit history for details.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

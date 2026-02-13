@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Config
+*.local
+.env
+
+# Data directory (runtime data, not source)
+backend/data/*.db
+backend/data/*.sqlite
+backend/data/*.json
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Frontend node modules (if building locally)
+frontend/node_modules/
+
+# Frontend build (will be included in release)
+# frontend/dist/ - DO NOT IGNORE, needed for release
