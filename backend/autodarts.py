@@ -52,11 +52,19 @@ def get_status():
 
 @bp.route('/install', methods=['POST'])
 def install():
+    from routes.detectors import autodarts_install_guard_response
+    guard = autodarts_install_guard_response()
+    if guard is not None:
+        return guard
     return _proxy_post("/install", request.get_json(silent=True))
 
 
 @bp.route('/update', methods=['POST'])
 def update():
+    from routes.detectors import autodarts_install_guard_response
+    guard = autodarts_install_guard_response()
+    if guard is not None:
+        return guard
     return _proxy_post("/update", request.get_json(silent=True))
 
 
@@ -67,7 +75,8 @@ def check_update():
 
 @bp.route('/service/start', methods=['POST'])
 def start_service():
-    return _proxy_post("/service/start")
+    from routes.detectors import switch_response
+    return switch_response("autodarts")
 
 
 @bp.route('/service/stop', methods=['POST'])
@@ -77,7 +86,8 @@ def stop_service():
 
 @bp.route('/service/restart', methods=['POST'])
 def restart_service():
-    return _proxy_post("/service/restart")
+    from routes.detectors import switch_response
+    return switch_response("autodarts", restart=True)
 
 
 @bp.route('/logs', methods=['GET'])

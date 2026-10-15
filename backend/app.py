@@ -52,11 +52,13 @@ def create_app():
     from routes.autodarts import bp as autodarts_bp
     from routes.settings import bp as settings_bp
     from routes.modules import bp as modules_bp
+    from routes.detectors import bp as detectors_bp
 
     app.register_blueprint(system_bp)
     app.register_blueprint(autodarts_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(modules_bp)
+    app.register_blueprint(detectors_bp)
 
     # Health check endpoint
     @app.route('/api/health', methods=['GET'])

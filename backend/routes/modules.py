@@ -58,6 +58,13 @@ def module_health(module_name):
 # Generic proxy  — forwards ANY request to a module API
 # ─────────────────────────────────────────────────────────────────────────
 
+@bp.route("/apps/autodarts/install", methods=["POST"])
+def install_autodarts_compat():
+    """Legacy app alias uses the same provider guard as the Autodarts API."""
+    from autodarts import install
+    return install()
+
+
 @bp.route("/modules/<module_name>/<path:path>", methods=["GET", "POST", "PUT", "DELETE"])
 def proxy_to_module(module_name, path):
     """
@@ -70,6 +77,16 @@ def proxy_to_module(module_name, path):
     module = registry.get_module(module_name)
     if module is None:
         return jsonify({"error": f"Module '{module_name}' not found"}), 404
+
+    if module_name == "autodarts-manager" and request.method == "POST":
+        from routes.detectors import autodarts_install_guard_response, switch_response
+        normalized_path = path.strip("/")
+        if normalized_path in {"v1/service/start", "v1/service/restart"}:
+            return switch_response("autodarts", restart=normalized_path.endswith("restart"))
+        if normalized_path in {"v1/install", "v1/update"}:
+            guard = autodarts_install_guard_response()
+            if guard is not None:
+                return guard
 
     data = (
         request.get_json(silent=True)
